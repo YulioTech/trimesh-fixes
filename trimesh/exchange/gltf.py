@@ -1161,7 +1161,13 @@ def _read_buffers(header,
     if "bufferViews" in header:
         # split buffer data into buffer views
         views = [None] * len(header["bufferViews"])
+
+        strides = [None] * len(header["bufferViews"]) 
+        
         for i, view in enumerate(header["bufferViews"]):
+            if "byteStride" in view:
+                strides[i] = view["byteStride"]
+
             if "byteOffset" in view:
                 start = view["byteOffset"]
             else:
@@ -1187,20 +1193,30 @@ def _read_buffers(header,
             # i.e. a (4, 4) MAT4 has 16
             per_count = np.abs(np.product(per_item))
             if 'bufferView' in a:
+                idx = a["bufferView"]
                 # data was stored in a buffer view so get raw bytes
-                data = views[a["bufferView"]]
+                data = views[idx]
                 # is the accessor offset in a buffer
                 if "byteOffset" in a:
                     start = a["byteOffset"]
                 else:
                     # otherwise assume we start at first byte
                     start = 0
+
+                stride = strides[idx]
+
+                if stride is None:
+                    stride = per_count * np.dtype(dtype).itemsize
+                
                 # length is the number of bytes per item times total
-                length = np.dtype(dtype).itemsize * count * per_count
-                # load the bytes data into correct dtype and shape
+                length = stride * count
+
+                arr =  data[start:start + length]
 
                 access[index] = np.frombuffer(
-                    data[start:start + length], dtype=dtype).reshape(shape)
+                   arr, dtype=dtype)
+
+                access[index] = np.lib.stride_tricks.as_strided(access[index], shape, strides=(stride, np.dtype(dtype).itemsize))
 
             else:
                 # a "sparse" accessor should be initialized as zeros
