@@ -97,7 +97,7 @@ elif '--list-easy' in sys.argv:
     exit()
 
 # call the magical setuptools setup
-setup(name='trimesh',
+setup(name='trimesh-fixes',
       version=__version__,
       description='Import, export, process, analyze and view triangular meshes.',
       long_description=long_description,
