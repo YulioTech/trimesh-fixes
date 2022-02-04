@@ -1324,7 +1324,7 @@ def _read_buffers(header,
                     # each primitive gets it's own Trimesh object
                     if len(m["primitives"]) > 1:
                         kwargs['metadata']['from_gltf_primitive'] = True
-                        name += "_{}".format(j)
+                        name += "_{}_{}".format(index, j)
                     else:
                         kwargs['metadata']['from_gltf_primitive'] = False
 
